@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        form div {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        input[type="number"] {
+            width: 100px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .results {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .results p {
+            margin-bottom: 5px;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Health Tracking</h1>
+        
+        <form id="sugarForm">
+            <h2>Sugar Level</h2>
+            <div>
+                <label for="sugarLevel">Enter Sugar Level:</label>
+                <input type="number" id="sugarLevel" name="sugarLevel">
+                <button id="sugarButton">Record</button>
+            </div>
+        </form>
+        <div class="results">
+            <p>Latest Sugar Level: <span id="latestSugar"></span></p>
+        </div>
+
+        <form id="bloodPressureForm">
+            <h2>Blood Pressure</h2>
+            <div>
+                <label for="systolic">Systolic:</label>
+                <input type="number" id="systolic" name="systolic">
+                <label for="diastolic">Diastolic:</label>
+                <input type="number" id="diastolic" name="diastolic">
+                <button id="bloodPressureButton">Record</button>
+            </div>
+        </form>
+        <div class="results">
+            <p>Latest Blood Pressure: <span id="latestBloodPressure"></span></p>
+        </div>
+
+        <div id="errorMessage" class="error"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sugarLevelInput = document.getElementById('sugarLevel');
+            const systolicInput = document.getElementById('systolic');
+            const diastolicInput = document.getElementById('diastolic');
+            const sugarButton = document.getElementById('sugarButton');
+            const bloodPressureButton = document.getElementById('bloodPressureButton');
+
+            sugarButton.addEventListener('click', recordSugarLevel);
+            bloodPressureButton.addEventListener('click', recordBloodPressure);
+
+            function recordSugarLevel(event) {
+                event.preventDefault();
+                const sugarLevel = sugarLevelInput.value.trim();
+                if (sugarLevel === '') {
+                    displayErrorMessage('Please enter sugar level.');
+                    return;
+                }
+
+                fetch('/api/sugar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ value: sugarLevel }),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to record sugar level.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    sugarLevelInput.value = '';
+                    fetchLatestSugarLevel();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    displayErrorMessage('Failed to record sugar level.');
+                });
+            }
+
+            function recordBloodPressure(event) {
+                event.preventDefault();
+                const systolic = systolicInput.value.trim();
+                const diastolic = diastolicInput.value.trim();
+                if (systolic === '' || diastolic === '') {
+                    displayErrorMessage('Please enter both systolic and diastolic pressures.');
+                    return;
+                }
+
+                const bloodPressureData = {
+                    systolic: Number(systolic),
+                    diastolic: Number(diastolic)
+                };
+
+                fetch('/api/blood_pressure', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bloodPressureData),
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to record blood pressure.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    alert(data.message);
+                    systolicInput.value = '';
+                    diastolicInput.value = '';
+                    fetchLatestBloodPressure();
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                    displayErrorMessage('Failed to record blood pressure.');
+                });
+            }
+
+            function fetchLatestSugarLevel() {
+                fetch('/api/sugar/latest')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch latest sugar level.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('latestSugar').textContent = data.latest_sugar || 'No data available';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        displayErrorMessage('Failed to fetch latest sugar level.');
+                    });
+            }
+
+            function fetchLatestBloodPressure() {
+                fetch('/api/blood_pressure/latest')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch latest blood pressure.');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('latestBloodPressure').textContent = data.latest_blood_pressure || 'No data available';
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                        displayErrorMessage('Failed to fetch latest blood pressure.');
+                    });
+            }
+
+            function displayErrorMessage(message) {
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = message;
+                setTimeout(() => {
+                    errorElement.textContent = '';
+                }, 3000);
+            }
+
+            // Fetch initial data on page load
+            fetchLatestSugarLevel();
+            fetchLatestBloodPressure();
+        });
+    </script>
+</body>
+</html>
