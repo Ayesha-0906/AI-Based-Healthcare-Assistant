@@ -1,39 +1,32 @@
+// index.js
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
 import { PORT, URI } from "./config.js";
 import App from "./routes/routes.js";
+import { app, server } from "./routes/socket.js";
 
+// Middleware for server
+app.use(cors());
+app.disable("x-powered-by"); // Reduce fingerprinting
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-
-// === 1 - CREATE SERVER ===
-const server = express();
-
-server.use(cors());
-server.disable("x-powered-by"); //Reduce fingerprinting
-server.use(cookieParser());
-server.use(express.urlencoded({ extended: false }));
-server.use(express.json());
-
-
-
-// === 2 - CONNECT DATABASE ===
+// Connect database
 mongoose.connect(URI)
-    .then( () => {
-        console.log('Connected to the database ')
-    })
-    .catch( (err) => {
-        console.error(`Error connecting to the database. n${err}`);
-    })
+  .then(() => {
+    console.log('Connected to the database');
+  })
+  .catch((err) => {
+    console.error(`Error connecting to the database. \n${err}`);
+  });
 
-// === 4 - CONFIGURE ROUTES ===
-// Connect Main route to server
-server.use(App);
+// Configure routes
+app.use(App);
 
-
-
-// === 5 - START UP SERVER ===
-server.listen(PORT, () =>
-    console.log(`Server running on http://localhost:${PORT}`)
-);
+// Start the server
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});

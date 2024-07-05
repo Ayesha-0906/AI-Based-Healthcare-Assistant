@@ -55,7 +55,7 @@ router.post('/healthrecord', Verify, async (req, res) => {
       const userId = req.user._id;
 
       // Create a new health record
-      const newRecord = new HealthRecord({
+      const newRecord = new HealthRecnpmord({
           user: userId,
           date,
           symptoms,
