@@ -2,6 +2,8 @@ import express from "express";
 import { Register, Login } from "../controllers/auth.js";
 import Validate from "../middleware/validate.js";
 import { check } from "express-validator";
+import { Verify } from "../middleware/verify.js";
+import HealthRecord from "../models/HealthRecord.js";
 
 const router = express.Router();
 
@@ -43,5 +45,36 @@ router.post(
   Validate,
   Login
 );
+
+
+// submit health records
+
+router.post('/healthrecord', Verify, async (req, res) => {
+  try {
+      const { date, symptoms, diagnosis, treatment } = req.body;
+      const userId = req.user._id;
+
+      // Create a new health record
+      const newRecord = new HealthRecord({
+          user: userId,
+          date,
+          symptoms,
+          diagnosis,
+          treatment
+      });
+
+      // Save the record to the database
+      await newRecord.save();
+
+      res.status(201).json({
+        "status":"success",
+        "message":"Record is added Successfully."
+      });
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to create health record' });
+  }
+});
+
+
 
 export default router;

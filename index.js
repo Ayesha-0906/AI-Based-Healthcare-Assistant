@@ -6,6 +6,7 @@ import { PORT, URI } from "./config.js";
 import App from "./routes/routes.js";
 
 
+
 // === 1 - CREATE SERVER ===
 const server = express();
 
@@ -29,7 +30,6 @@ mongoose.connect(URI)
 // === 4 - CONFIGURE ROUTES ===
 // Connect Main route to server
 server.use(App);
-
 
 
 

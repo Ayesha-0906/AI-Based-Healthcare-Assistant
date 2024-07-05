@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Health Records</title>
-    <link rel="stylesheet" href="styles.css">
+
     
 </head>
 <body>
     <div class="container">
         <h1>Health Records</h1>
-        <form id="healthRecordForm">
+        <form id="healthRecordForm" onsubmit="addHealthRecord(event)">
             <label for="date">Date:</label>
             <input type="date" id="date" name="date" required><br>
 
@@ -23,7 +23,7 @@
             <label for="treatment">Treatment:</label><br>
             <textarea id="treatment" name="treatment" rows="4" cols="50" placeholder="Enter treatment"></textarea><br>
 
-            <button type="button" onclick="addHealthRecord()">Add Health Record</button>
+            <button type="submit" >Add Health Record</button>
         </form>
 
         <div id="healthRecords">

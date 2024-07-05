@@ -102,37 +102,74 @@ function toggleForms() {
   }
 }
 
-function addHealthRecord() {
-  const date = document.getElementById("date").value;
-  const symptoms = document.getElementById("symptoms").value;
-  const diagnosis = document.getElementById("diagnosis").value;
-  const treatment = document.getElementById("treatment").value;
+// function addHealthRecord() {
+//   const date = document.getElementById("date").value;
+//   const symptoms = document.getElementById("symptoms").value;
+//   const diagnosis = document.getElementById("diagnosis").value;
+//   const treatment = document.getElementById("treatment").value;
 
-  const healthRecord = {
-    date: date,
-    symptoms: symptoms,
-    diagnosis: diagnosis,
-    treatment: treatment,
-  };
+//   const healthRecord = {
+//     date: date,
+//     symptoms: symptoms,
+//     diagnosis: diagnosis,
+//     treatment: treatment,
+//   };
 
-  // Send health record to backend (dummy function for now)
-  fetch("/add_health_record", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(healthRecord),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      displayHealthRecord(data.healthRecord);
-    })
-    .catch((error) => {
-      console.error("Error:", error);
-      alert(
-        "An error occurred while adding health record. Please try again later."
-      );
+//   // Send health record to backend (dummy function for now)
+//   fetch("/add_health_record", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(healthRecord),
+//   })
+//     .then((response) => response.json())
+//     .then((data) => {
+//       displayHealthRecord(data.healthRecord);
+//     })
+//     .catch((error) => {
+//       console.error("Error:", error);
+//       alert(
+//         "An error occurred while adding health record. Please try again later."
+//       );
+//     });
+// }
+
+async function addHealthRecord(event) {
+  event.preventDefault();
+
+  const date = document.querySelector('input[name="date"]').value;
+  const symptoms = document.querySelector('textarea[name="symptoms"]').value;
+  const diagnosis = document.querySelector('textarea[name="diagnosis"]').value;
+  const treatment = document.querySelector('textarea[name="treatment"]').value;
+
+  try {
+    const response = await fetch('/auth/healthrecord', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ date, symptoms, diagnosis, treatment }),
+      credentials: 'include' // This ensures cookies are sent with the request
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to add health record');
+    }
+
+    const data = await response.json();
+    if(data.status == "success"){
+      alert(data.message);
+      window.location.reload();
+
+    }else{
+      alert("Something went wrong.")
+    }
+
+  } catch (error) {
+    console.error('Error adding health record:', error.message);
+    // Optionally, handle error here (e.g., show an error message to the user)
+  }
 }
 
 function displayHealthRecord(healthRecord) {
