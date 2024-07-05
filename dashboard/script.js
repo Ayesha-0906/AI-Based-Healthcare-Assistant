@@ -74,7 +74,7 @@ const loginUser = async (e) => {
     if (result.status == "success") {
       alert(result.message);
 
-      window.location.href = "/user";
+      window.location.href = "home.html";
     }
   } catch (error) {
     console.error(error);
@@ -100,4 +100,50 @@ function toggleForms() {
     loginContainer.style.display =
       loginContainer.style.display === "none" ? "block" : "none";
   }
+}
+
+function addHealthRecord() {
+  const date = document.getElementById("date").value;
+  const symptoms = document.getElementById("symptoms").value;
+  const diagnosis = document.getElementById("diagnosis").value;
+  const treatment = document.getElementById("treatment").value;
+
+  const healthRecord = {
+    date: date,
+    symptoms: symptoms,
+    diagnosis: diagnosis,
+    treatment: treatment,
+  };
+
+  // Send health record to backend (dummy function for now)
+  fetch("/add_health_record", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(healthRecord),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      displayHealthRecord(data.healthRecord);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      alert(
+        "An error occurred while adding health record. Please try again later."
+      );
+    });
+}
+
+function displayHealthRecord(healthRecord) {
+  const healthRecordsDiv = document.getElementById("healthRecords");
+  const recordDiv = document.createElement("div");
+  recordDiv.classList.add("health-record");
+  recordDiv.innerHTML = `
+        <h3>${healthRecord.date}</h3>
+        <p><strong>Symptoms:</strong> ${healthRecord.symptoms}</p>
+        <p><strong>Diagnosis:</strong> ${healthRecord.diagnosis}</p>
+        <p><strong>Treatment:</strong> ${healthRecord.treatment}</p>
+    `;
+  healthRecordsDiv.appendChild(recordDiv);
 }
